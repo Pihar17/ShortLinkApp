@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        /* Стилизация форм и элементов интерфейса */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #f3f3f3;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            background-color: #3b79c5;
+            color: white;
+            padding: 20px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .container, .auth-container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .input-section input[type="text"], .auth-container input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-section button, .auth-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3b79c5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-section button:hover, .auth-container button:hover {
+            background-color: #356bb3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f9f9f9;
+        }
+        a {
+            color: #3b79c5;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .original-url {
+            max-width: 300px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Simplify your links</h1>
+</div>
+
+<!-- Контейнер для форм аутентификации -->
+<div id="auth-section" class="auth-container">
+    <div id="login-form">
+        <h2>Login</h2>
+        <div class="form-group">
+            <input type="text" id="login-username" placeholder="Username">
+        </div>
+        <div class="form-group">
+            <input type="password" id="login-password" placeholder="Password">
+        </div>
+        <button onclick="login()">Login</button>
+        <p>Don't have an account? <a href="#" onclick="showRegister()">Register here</a></p>
+    </div>
+
+    <div id="register-form" style="display: none;">
+        <h2>Register</h2>
+        <div class="form-group">
+            <input type="text" id="register-username" placeholder="Username">
+        </div>
+        <div class="form-group">
+            <input type="email" id="register-email" placeholder="Email">
+        </div>
+        <div class="form-group">
+            <input type="password" id="register-password" placeholder="Password">
+        </div>
+        <button onclick="register()">Register</button>
+        <p>Already have an account? <a href="#" onclick="showLogin()">Login here</a></p>
+    </div>
+</div>
+
+<div id="app-section" class="container" style="display: none;">
+    <div class="input-section">
+        <input type="text" id="originalUrl" placeholder="Your original URL here">
+        <button onclick="shortenUrl()">SHORTEN URL</button>
+    </div>
+    <p>All shortened URLs and click analytics are public and can be accessed by anyone</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Original URL</th>
+                <th>Created</th>
+                <th>Short URL</th>
+                <th>All Clicks</th>
+            </tr>
+        </thead>
+        <tbody id="urlTable">
+            <!-- URLs will be added here dynamically -->
+        </tbody>
+    </table>
+
+    <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+    function showRegister() {
+        document.getElementById("login-form").style.display = "none";
+        document.getElementById("register-form").style.display = "block";
+    }
+
+    function showLogin() {
+        document.getElementById("register-form").style.display = "none";
+        document.getElementById("login-form").style.display = "block";
+    }
+
+    async function register() {
+        const username = document.getElementById("register-username").value;
+        const email = document.getElementById("register-email").value;
+        const password = document.getElementById("register-password").value;
+
+        const response = await fetch("/api/account/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message);
+            showLogin();
+        } else {
+            alert(data.error || "Registration failed.");
+        }
+    }
+
+    async function login() {
+        const username = document.getElementById("login-username").value;
+        const password = document.getElementById("login-password").value;
+
+        const response = await fetch("/api/account/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+            document.getElementById("auth-section").style.display = "none";
+            document.getElementById("app-section").style.display = "block";
+            loadUrls();
+        } else {
+            alert("Invalid login attempt.");
+        }
+    }
+
+    async function logout() {
+        const response = await fetch("/api/account/logout", {
+            method: "POST"
+        });
+
+        if (response.ok) {
+            document.getElementById("auth-section").style.display = "block";
+            document.getElementById("app-section").style.display = "none";
+        } else {
+            alert("Logout failed.");
+        }
+    }
+
+    async function shortenUrl() {
+        const originalUrl = document.getElementById('originalUrl').value;
+        
+        if (!originalUrl) {
+            alert("Please enter a valid URL.");
+            return;
+        }
+        
+        const response = await fetch('/api/url/shorten', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: originalUrl })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            addUrlToTable(result.shortUrl, originalUrl, 0);
+            document.getElementById('originalUrl').value = '';
+        } else {
+            alert(result.error || "An error occurred.");
+        }
+    }
+
+    async function loadUrls() {
+        const response = await fetch('/api/url');
+        const urls = await response.json();
+        const urlTable = document.getElementById('urlTable');
+        urlTable.innerHTML = '';
+
+        urls.forEach(url => {
+            addUrlToTable(url.shortUrl, url.originalUrl, url.clicks);
+        });
+    }
+
+    // Асинхронно обновляет счётчик кликов для короткой ссылки
+    async function handleShortUrlClick(event, shortUrlElement) {
+        event.preventDefault();
+
+        const shortUrl = shortUrlElement.getAttribute('href');
+
+        // Открываем окно сразу, чтобы оно не заблокировалось
+        const newWindow = window.open('', '_blank');
+
+        const response = await fetch(shortUrl); // обращаемся к серверу
+        const result = await response.json();
+
+        if (response.ok) {
+            // Обновляем статистику кликов на странице
+            const clickCountElement = document.querySelector(`.click-count[data-short-url="${shortUrl}"]`);
+            if (clickCountElement) {
+                clickCountElement.textContent = result.clicks;
+            }
+
+            // Перенаправляем открытое окно на оригинальный URL
+            newWindow.location.href = result.originalUrl;
+        } else {
+            // Закрываем окно и выводим ошибку, если запрос не успешен
+            newWindow.close();
+            alert("Ошибка при загрузке URL");
+        }
+    }
+
+    // Функция для добавления строки в таблицу URL
+        function addUrlToTable(shortUrl, originalUrl, clicks) {
+        const urlTable = document.getElementById('urlTable');
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td><a href="${originalUrl}" class="original-url" target="_blank">${originalUrl}</a></td>
+            <td>${new Date().toLocaleString()}</td>
+            <td><a href="${shortUrl}" target="_blank" onclick="handleShortUrlClick(event, this)">${shortUrl}</a></td>
+            <td class="click-count" data-short-url="${shortUrl}">${clicks}</td>
+        `;
+        urlTable.appendChild(newRow);
+    }
+</script>
+
+</body>
+</html>

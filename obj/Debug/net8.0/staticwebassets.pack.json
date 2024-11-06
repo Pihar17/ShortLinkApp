@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "/Users/maksimrenev/ShortLinkApp/wwwroot/index.html",
+      "PackagePath": "staticwebassets/index.html"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.ShortLinkApp.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.build.ShortLinkApp.props",
+      "PackagePath": "build\\ShortLinkApp.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.ShortLinkApp.props",
+      "PackagePath": "buildMultiTargeting\\ShortLinkApp.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.ShortLinkApp.props",
+      "PackagePath": "buildTransitive\\ShortLinkApp.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
