@@ -1,16 +1,28 @@
 ## ShortLinkApp
-first commit 123
 
 # Mac files
 
-1.  **Установка**
+1.  **Запуск через терминал**
 
     ```shell
-    npm install -g gatsby-cli
+    dotnet run
     ```
 
-1.  **Создать новый сайт**
+2.  **Перейти  по ссылке**
 
     ```shell
-    gatsby new blob-site
+    http://localhost:5056/index.html
+    ```
+
+3.  **Авторизоваться**
+
+    ```shell
+    Можно создать свой акк, или войти уже в зарегистрированный
+    login: qwe
+    password: 123qwe
+    ```
+4.  **Выключение через терминал**
+
+    ```shell
+    Сочетание клавишь: cntrl + C
     ```

@@ -140,3 +140,4 @@
 /Users/maksimrenev/ShortLinkApp/obj/Debug/net8.0/ShortLinkApp.pdb
 /Users/maksimrenev/ShortLinkApp/obj/Debug/net8.0/ShortLinkApp.genruntimeconfig.cache
 /Users/maksimrenev/ShortLinkApp/obj/Debug/net8.0/ref/ShortLinkApp.dll
+/Users/maksimrenev/ShortLinkApp/obj/Debug/net8.0/ShortLinkApp.sourcelink.json
